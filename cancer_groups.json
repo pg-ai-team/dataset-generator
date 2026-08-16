@@ -1,0 +1,46 @@
+{
+    "AsymptomaticControls": [
+        "Asymptomatic controls"
+    ],
+    "other": [
+        "Angina pectoris",
+        "Bowel disease",
+        "Hematuria",
+        "Medically-intractable epilepsy",
+        "Multiple sclerosis",
+        "nSTEMI",
+        "Pulmonary Hypertension",
+        "Pancreatic diseases"
+    ],
+    "SkinSoftTissue": [
+        "Breast cancer",
+        "Former sarcoma",
+        "Melanoma",
+        "Sacroma"
+    ],
+    "DigestiveSystem": [
+        "Cholangiocarcinoma",
+        "Colorectal cancer",
+        "Hepatocellular carcinoma",
+        "Pancreatic cancer",
+        "Esophageal carcinoma"
+    ],
+    "ReproductiveUrinary": [
+        "Endometrial cancer",
+        "Ovarian cancer",
+        "Prostate cancer",
+        "Renal cell cancer",
+        "Urothelial cancer"
+    ],
+    "Neurological": [
+        "Glioma"
+    ],
+    "Respiratory": [
+        "Head and neck cancer",
+        "Non-small-cell lung cancer"
+    ],
+    "BloodLymphaticSystem": [
+        "Lymphoma",
+        "Multiple Myeloma"
+    ]
+}
