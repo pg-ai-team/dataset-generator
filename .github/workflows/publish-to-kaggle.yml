@@ -1,0 +1,31 @@
+name: Publish dataset to Kaggle
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt kaggle
+
+      - name: Generate dataset
+        run: python main.py
+
+      - name: Copy dataset metadata
+        run: cp data/dataset-metadata.json data/KEGG_Pathway_Image/
+
+      - name: Upload new dataset version to Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: kaggle datasets version -p data/KEGG_Pathway_Image/ --dir-mode tar -m "Release ${{ github.ref_name }}"
