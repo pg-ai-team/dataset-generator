@@ -1,17 +1,16 @@
 import os
 import json
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 # ==============================
 # Helper: create directory
 # ==============================
-def create_dir_if_not_exists(main_dir, sub_dir):
-    path = os.path.join(main_dir, sub_dir)
+def create_dir_if_not_exists(main_dir: str, sub_dir: str) -> str:
+    path = os.path.join(str(main_dir), str(sub_dir))
     os.makedirs(path, exist_ok=True)
-    return path
+    return str(path)
 
 # ==============================
 # Build pathway matrix
@@ -70,25 +69,11 @@ def generate_kegg_pathway_images(path,
 
     sample_names = list(data_filtered.columns)
 
-    # ---- Grouping cancers for classification
-    groupsToClassify = {
-        'AsymptomaticControls' : ['Asymptomatic controls'],
-        'other' : ['Angina pectoris', 'Bowel disease', 'Hematuria', 'Medically-intractable epilepsy', 'Multiple sclerosis', 'nSTEMI', 'Pulmonary Hypertension', 'Pancreatic diseases'],
-        'SkinSoftTissue' : ['Breast cancer', 'Former sarcoma', 'Melanoma', 'Sacroma'],
-        'DigestiveSystem' : ['Cholangiocarcinoma', 'Colorectal cancer', 'Hepatocellular carcinoma', 'Pancreatic cancer', 'Esophageal carcinoma'],
-        'ReproductiveUrinary' : ['Endometrial cancer', 'Ovarian cancer', 'Prostate cancer', 'Renal cell cancer', 'Urothelial cancer'],
-        'Neurological' : ['Glioma'],
-        'Respiratory' : ['Head and neck cancer', 'Non-small-cell lung cancer'],
-        'BloodLymphaticSystem' : ['Lymphoma', 'Multiple Myeloma']
-    }
-    if many_classes:
-        for i in range(len(sample_groups)):
-            for group in groupsToClassify:
-                if sample_groups[i] in groupsToClassify[group]:
-                    sample_groups[i] = group
+    # The filename now include sample_group
+    # Groups will be assigned dynamically.
 
     if sample_groups is not None and len(sample_groups) == len(sample_names):
-        file_labels = [f"{g}_{n}" for g, n in zip(sample_groups, sample_names)]
+        file_labels = [f"{str(g).replace(' ', '')}_{n}" for g, n in zip(sample_groups, sample_names)]
     else:
         file_labels = sample_names
 
@@ -102,53 +87,51 @@ def generate_kegg_pathway_images(path,
 
     for col_idx in range(total_samples):
         # 1. Pobranie danych
-        if 'other' not in file_labels[col_idx]:
-
-            print(col_idx, " : ", file_labels[col_idx])
-            output = build_expression_pathway_matrix(
-                sig_sym, met_sym, cancer_sym,
-                data_filtered, col_idx, pic_width, pic_height
-            )
-            matrix_save_name = os.path.join(matrix_path, f"{file_labels[col_idx]}.txt")
-            np.savetxt(matrix_save_name, output, fmt='%.6f', delimiter=' ')
+        print(col_idx, " : ", file_labels[col_idx])
+        output = build_expression_pathway_matrix(
+            sig_sym, met_sym, cancer_sym,
+            data_filtered, col_idx, pic_width, pic_height
+        )
+        matrix_save_name = os.path.join(matrix_path, f"{file_labels[col_idx]}.txt")
+        np.savetxt(matrix_save_name, output, fmt='%.6f', delimiter=' ')
 
 
-            # 2. PRZETWARZANIE: Wszystko ujemne staje się 0 (idealna czerń)
-            processed_data = np.maximum(output, 0)
+        # 2. PRZETWARZANIE: Wszystko ujemne staje się 0 (idealna czerń)
+        processed_data = np.maximum(output, 0)
 
-            max_val = np.max(processed_data)
-            if max_val <= 0: max_val = 1 # Uniknięcie błędu przy pustych danych
+        max_val = np.max(processed_data)
+        if max_val <= 0: max_val = 1 # Uniknięcie błędu przy pustych danych
 
-            # 3. RYSOWANIE
-            fig = plt.figure(figsize=(pic_width / 100, pic_height / 100), dpi=100)
-            ax = fig.add_axes([0, 0, 1, 1]) # Brak marginesów
+        # 3. RYSOWANIE
+        fig = plt.figure(figsize=(pic_width / 100, pic_height / 100), dpi=100)
+        ax = fig.add_axes((0.0, 0.0, 1.0, 1.0)) # Brak marginesów
 
-            fig.patch.set_facecolor('black')
-            ax.set_facecolor('black')
+        fig.patch.set_facecolor('black')
+        ax.set_facecolor('black')
 
-            # Wyświetlamy macierz. origin='lower' naprawia odwrócenie do góry nogami.
-            ax.imshow(
-                processed_data,
-                cmap=cmap_kegg,
-                vmin=0,
-                vmax=max_val,
-                aspect="auto",
-                interpolation='nearest',
-                origin='lower'
-            )
+        # Wyświetlamy macierz. origin='lower' naprawia odwrócenie do góry nogami.
+        ax.imshow(
+            processed_data,
+            cmap=cmap_kegg,
+            vmin=0,
+            vmax=max_val,
+            aspect="auto",
+            interpolation='nearest',
+            origin='lower'
+        )
 
-            ax.axis("off")
+        ax.axis("off")
 
-            # 4. ZAPIS
-            save_name = os.path.join(image_path, f"{file_labels[col_idx]}.png")
-            plt.savefig(
-                save_name,
-                dpi=100,
-                facecolor='black',
-                edgecolor='none',
-                pad_inches=0
-            )
-            plt.close(fig)
+        # 4. ZAPIS
+        save_name = os.path.join(image_path, f"{file_labels[col_idx]}.png")
+        plt.savefig(
+            save_name,
+            dpi=100,
+            facecolor='black',
+            edgecolor='none',
+            pad_inches=0
+        )
+        plt.close(fig)
 
     print("KEGG pathway images prepared.")
     return pathway_path
