@@ -4,9 +4,9 @@ import shutil
 import requests
 import pandas as pd
 
-from normalize_data import normalize_raw_data
-from annotateData import annotateData
-from generatePathwayImages import generate_kegg_pathway_images
+from src.normalize_data import normalize_raw_data
+from src.annotateData import annotateData
+from src.generatePathwayImages import generate_kegg_pathway_images
 
 def genPhotos():
     # ==============================
