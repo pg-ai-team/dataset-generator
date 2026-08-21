@@ -1,0 +1,5 @@
+{
+  "title": "KEGG Pathway Images",
+  "description": "A dataset of KEGG pathway images generated from gene expression data.",
+  "id": "skykuba/kegg-pathway-images"
+}
