@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,13 +19,38 @@ jobs:
           python-version: 3.11
 
       - name: Install dependencies
-        run: pip install -r requirements.txt kaggle
+        run: pip install -r requirements.txt
 
       - name: Generate dataset
         run: python main.py
 
       - name: Copy dataset metadata
         run: cp data/dataset-metadata.json data/KEGG_Pathway_Image/
+
+      - name: Upload dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-artifact
+          path: data/KEGG_Pathway_Image/
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dataset artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dataset-artifact
+          path: data/KEGG_Pathway_Image/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
 
       - name: Upload new dataset version to Kaggle
         env:
