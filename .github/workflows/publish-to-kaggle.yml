@@ -31,4 +31,10 @@ jobs:
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
-        run: kaggle datasets create -p data/KEGG_Pathway_Image/ --dir-mode tar
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            MSG="Release ${{ github.ref_name }}"
+          else
+            MSG="Release new version"
+          fi
+          kaggle datasets version -p data/KEGG_Pathway_Image/ --dir-mode tar -m "$MSG"
