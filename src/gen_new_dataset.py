@@ -10,9 +10,12 @@ input_dir = os.path.join(data_dir, "Images")
 output_dir = os.path.join(data_dir, "new_Images")
 
 if not os.path.exists(data_dir):
-  raise FileNotFoundError(f"Data directory not found: {data_dir}! Generate dataset first!")
+    raise FileNotFoundError(
+        f"Data directory not found: {data_dir}! Generate dataset first!"
+    )
 
 os.makedirs(output_dir, exist_ok=True)
+
 
 def get_image_array(file):
     """
@@ -23,14 +26,16 @@ def get_image_array(file):
         img = img.convert("RGB")
         return np.array(img)
 
+
 def find_last_red_pixel(row):
     """
     Returns the index of the last red pixel or length of the row if no black pixel is found.
     """
-    for i in range(len(row)-1, -1, -1):
+    for i in range(len(row) - 1, -1, -1):
         if row[i] != 0:
             return i
     return 0
+
 
 def get_max_rows_lengths(images_files):
     """
@@ -39,8 +44,10 @@ def get_max_rows_lengths(images_files):
     """
     max_rows_lengths = {}
     for file in images_files:
-        if not file.endswith(('.png', '.jpg', '.jpeg')):
-            raise ValueError(f"Unsupported file format: {file}. Only .png, .jpg, and .jpeg are supported.")
+        if not file.endswith((".png", ".jpg", ".jpeg")):
+            raise ValueError(
+                f"Unsupported file format: {file}. Only .png, .jpg, and .jpeg are supported."
+            )
         img_array_RGB = get_image_array(file)
         img_array = img_array_RGB[:, :, 0]
         for row_id, row in enumerate(img_array):
@@ -49,6 +56,7 @@ def get_max_rows_lengths(images_files):
                 max_rows_lengths[row_id] = max_length
 
     return sorted(max_rows_lengths.items(), key=lambda x: x[1], reverse=True)
+
 
 def group_rows(max_rows_lengths, img_size=224, patch_size=16):
     """
@@ -61,10 +69,11 @@ def group_rows(max_rows_lengths, img_size=224, patch_size=16):
     b_rows = [row_id for row_id, _ in max_rows_lengths[num_patches:]]
     return rg_rows, b_rows
 
+
 def generate_RG_patch_from_row(row, patch_length=16):
     """
     Generates patch of size patch_length x patch_length from the given row in RG channels.
-    Firstly fills the patch with red pixels from left-top. 
+    Firstly fills the patch with red pixels from left-top.
     If there is no space for red pixels switch to green channel and fill patch from left-top with green pixels.
     """
     patch = np.zeros((patch_length, patch_length, 3), dtype=int)
@@ -74,22 +83,23 @@ def generate_RG_patch_from_row(row, patch_length=16):
     for y in range(patch_length):
         for x in range(patch_length):
             # y*patch_length + x is the index of the pixel in the row; to 255
-            if y*patch_length + x <= length:
-                patch[y, x, 0] = row[y*patch_length + x]
+            if y * patch_length + x <= length:
+                patch[y, x, 0] = row[y * patch_length + x]
             else:
                 return patch
-            
-    if length > patch_length*patch_length - 1:
+
+    if length > patch_length * patch_length - 1:
         # GREEN CHANNEL
         for y in range(patch_length):
             for x in range(patch_length):
                 # patch_length**2 + y*patch_length + x is the index of the pixel in the row; from 256
-                if patch_length**2 + y*patch_length + x <= length:
-                    patch[y, x, 1] = row[patch_length**2 + y*patch_length + x]
+                if patch_length**2 + y * patch_length + x <= length:
+                    patch[y, x, 1] = row[patch_length**2 + y * patch_length + x]
                 else:
                     return patch
     else:
         return patch
+
 
 def generate_B_patch_from_row(row, patch_length=16):
     """
@@ -101,10 +111,11 @@ def generate_B_patch_from_row(row, patch_length=16):
 
     for y in range(patch_length):
         for x in range(patch_length):
-            if y*patch_length + x <= length:
-                patch[y, x, 2] = row[y*patch_length + x]
+            if y * patch_length + x <= length:
+                patch[y, x, 2] = row[y * patch_length + x]
             else:
                 return patch
+
 
 def sum_RG_and_B_patches(RG_patches, B_patches):
     """
@@ -116,7 +127,8 @@ def sum_RG_and_B_patches(RG_patches, B_patches):
         RG_patches[i] = RG_patches[i] + B_patches[i]
     return RG_patches
 
-def fill_array_with_patches(summed_patches, img_length=224*224, patch_length=16*16):
+
+def fill_array_with_patches(summed_patches, img_length=224 * 224, patch_length=16 * 16):
     """
     Fills the new image array with summed RG and B patches.
     """
@@ -136,21 +148,27 @@ def fill_array_with_patches(summed_patches, img_length=224*224, patch_length=16*
         new_image[y_start:y_end, x_start:x_end] = patch
     return new_image
 
+
 def save_new_image(new_image_array, file_name):
     """
     Saves the new image array to the specified output path.
     """
-    new_image = Image.fromarray(new_image_array.astype('uint8'), 'RGB')
+    new_image = Image.fromarray(new_image_array.astype("uint8"), "RGB")
     output_path = os.path.join(output_dir, file_name)
     new_image.save(output_path)
 
-def generate_new_images_arrays(images_files, rg_rows, b_rows, img_length=224, patch_length=16):
+
+def generate_new_images_arrays(
+    images_files, rg_rows, b_rows, img_length=224, patch_length=16
+):
     """
     Generates new images based on the RG and B row groups.
     """
     for file in images_files:
-        if not file.endswith(('.png', '.jpg', '.jpeg')):
-            raise ValueError(f"Unsupported file format: {file}. Only .png, .jpg, and .jpeg are supported.")
+        if not file.endswith((".png", ".jpg", ".jpeg")):
+            raise ValueError(
+                f"Unsupported file format: {file}. Only .png, .jpg, and .jpeg are supported."
+            )
         RG_patches = []
         B_patches = []
         img_array_RGB = get_image_array(file)
@@ -162,8 +180,11 @@ def generate_new_images_arrays(images_files, rg_rows, b_rows, img_length=224, pa
             patch = generate_B_patch_from_row(img_array[row_id], patch_length)
             B_patches.append(patch)
         summed_patches = sum_RG_and_B_patches(RG_patches, B_patches)
-        new_img_array = fill_array_with_patches(summed_patches, img_length, patch_length)
+        new_img_array = fill_array_with_patches(
+            summed_patches, img_length, patch_length
+        )
         save_new_image(new_img_array, file)
+
 
 if __name__ == "__main__":
     if not os.path.exists(input_dir):
