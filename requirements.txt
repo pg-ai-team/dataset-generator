@@ -3,3 +3,7 @@ pillow
 requests
 pydeseq2
 matplotlib
+
+# Development & Code Quality
+black
+pylint
