@@ -3,13 +3,14 @@ on:
   push:
     tags:
       - v*
-  workflow_dispatch:
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -17,7 +18,7 @@ jobs:
           python-version: 3.11
 
       - name: Install dependencies
-        run: pip install -r requirements.txt kaggle
+        run: pip install -r requirements.txt
 
       - name: Generate dataset
         run: python main.py
@@ -25,8 +26,39 @@ jobs:
       - name: Copy dataset metadata
         run: cp data/dataset-metadata.json data/KEGG_Pathway_Image/
 
+      - name: Upload dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-artifact
+          path: data/KEGG_Pathway_Image/
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dataset artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dataset-artifact
+          path: data/KEGG_Pathway_Image/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
+
       - name: Upload new dataset version to Kaggle
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-        run: kaggle datasets version -p data/KEGG_Pathway_Image/ --dir-mode tar -m "Release ${{ github.ref_name }}"
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            MSG="Release ${{ github.ref_name }}"
+          else
+            MSG="Release new version"
+          fi
+          kaggle datasets version -p data/KEGG_Pathway_Image/ --dir-mode tar -m "$MSG"

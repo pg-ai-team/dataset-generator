@@ -7,6 +7,7 @@ data/raw/*
 !data/raw/sampleInfo.csv
 !data/raw/kegg_pathways.json
 !data/raw/counts_raw.csv
+!data/dataset-metadata.json
 
 .idea
 
