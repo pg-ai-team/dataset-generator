@@ -107,6 +107,10 @@ def genPhotos():
             print("jest plik")
             if len(sample_info) == data_filtered_annotated.shape[1]:
                 print("jest shape")
+                # Align metadata rows to count-matrix columns by sample id
+                sample_info = sample_info.set_index("id").loc[
+                    data_filtered_annotated.columns
+                ]
                 if multiClass:
                     sample_groups = sample_info["GroupAlternative"].tolist()
                 else:
