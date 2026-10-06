@@ -4,7 +4,7 @@ import shutil
 import requests
 import pandas as pd
 
-from src.normalize_data import normalize_raw_data
+from src.normalize_deseq import normalize_deseq2_no_report
 from src.annotateData import annotateData
 from src.generatePathwayImages import generate_kegg_pathway_images
 
@@ -82,7 +82,7 @@ def genPhotos():
     # ==============================
 
     print("Normalizing data...")
-    data_filtered = normalize_raw_data(counts_raw)
+    data_filtered = normalize_deseq2_no_report(counts_raw)
     print("Normalization completed.")
 
     # ==============================
