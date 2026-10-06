@@ -82,7 +82,7 @@ def genPhotos():
     # ==============================
 
     print("Normalizing data...")
-    data_filtered = normalize_deseq2_no_report(counts_raw)
+    data_filtered = normalize_deseq2_no_report(counts_raw, fast=False)
     print("Normalization completed.")
 
     # ==============================
